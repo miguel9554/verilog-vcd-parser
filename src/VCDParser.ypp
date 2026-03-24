@@ -149,10 +149,10 @@ declaration_command :
     new_signal -> type      = $2;
     new_signal -> size      = $3;
     new_signal -> hash      = $4;
-    if (new_signal->size == 1) {
-        assert((new_signal->lindex == -1) || (new_signal->rindex == -1));
-    } else {
-        assert((new_signal->lindex > 0) && (new_signal->lindex - new_signal->rindex + 1 == new_signal->size));
+    if (new_signal->lindex == -1 && new_signal->size > 1) {
+        // Infer bit range for multi-bit signals declared without explicit range
+        new_signal->lindex = new_signal->size - 1;
+        new_signal->rindex = 0;
     }
     VCDScope * scope = driver.scopes.top();
     scope -> signals.push_back(new_signal);

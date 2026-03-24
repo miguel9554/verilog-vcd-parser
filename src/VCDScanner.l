@@ -74,6 +74,7 @@ BIN_NUM             (b|B)(0|1|x|X|z|Z)+
 REAL_NUM            (r|r)[0-9]+(\.[0-9]+)?
 IDENTIFIER_CODE     [a-zA-Z_0-9!/\,\.@':~#\*\(\)\+\{\}\$\%\[\]`\"&;<>=\?\-\^\(\)\|\\]+
 SCOPE_IDENTIFIER    [a-zA-Z_][a-zA-Z_0-9\(\)]*
+SIGNAL_REFERENCE    [a-zA-Z_][a-zA-Z_0-9\.\(\)\[\]]*
 
 DECIMAL_NUM         [0-9]+
 
@@ -162,15 +163,15 @@ VERSION_TEXT        {COMMENT_TEXT}
     //std::cout << yytext << ", ";
     VCDTimeUnit tr = TIME_S;
 
-    if(std::strcmp(yytext, "s")) {
+    if(!std::strcmp(yytext, "s")) {
         tr = TIME_S;
-    } else if(std::strcmp(yytext, "ms")) {
+    } else if(!std::strcmp(yytext, "ms")) {
         tr = TIME_MS;
-    } else if(std::strcmp(yytext, "us")) {
+    } else if(!std::strcmp(yytext, "us")) {
         tr = TIME_US;
-    } else if(std::strcmp(yytext, "ns")) {
+    } else if(!std::strcmp(yytext, "ns")) {
         tr = TIME_NS;
-    } else if(std::strcmp(yytext, "ps")) {
+    } else if(!std::strcmp(yytext, "ps")) {
         tr = TIME_PS;
     }
 
@@ -261,7 +262,7 @@ VERSION_TEXT        {COMMENT_TEXT}
     return VCDParser::parser::make_TOK_IDENTIFIER(std::string(yytext),loc);
 }
 
-<IN_VAR_PID>{SCOPE_IDENTIFIER} {
+<IN_VAR_PID>{SIGNAL_REFERENCE} {
     //std::cout << yytext << ", ";
     return VCDParser::parser::make_TOK_IDENTIFIER(std::string(yytext),loc);
 }
@@ -394,6 +395,8 @@ void VCDFileParser::scan_begin() {
         error("Cannot open "+filepath+": "+strerror(errno));
         exit(EXIT_FAILURE);
     }
+    yyrestart(yyin);
+    BEGIN(INITIAL);
 }
 
 void VCDFileParser::scan_end() {
